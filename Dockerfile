@@ -8,7 +8,10 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy rclone config file
+# Create the necessary directory for rclone configuration
+RUN mkdir -p /root/.config/rclone
+
+# Copy rclone configuration file into the container
 COPY rclone.conf /root/.config/rclone/rclone.conf
 
 # Create a user for FTP access
@@ -28,5 +31,5 @@ RUN echo "listen=0.0.0.0" >> /etc/vsftpd.conf \
     && echo "local_root=/home/ftpuser/rclone" >> /etc/vsftpd.conf
 
 # Mount Google Drive and start FTP server
-CMD rclone mount remote:/ /home/ftpuser/rclone --vfs-cache-mode full --allow-other & \
-    /usr/sbin/vsftpd /etc/vsftpd.conf
+CMD rclone mount remote:/ /home/ftpuser/rclone --vfs-cache-mode full --allow-other --log-level DEBUG --log-file /var/log/rclone.log & \
+    /usr/sbin/vsftpd /etc/vsftpd.conf --log-file /var/log/vsftpd.log
