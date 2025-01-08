@@ -20,7 +20,7 @@ RUN groupadd sftpgroup && \
 
 # Configure SSH for SFTP only
 RUN sed -i 's/Subsystem.*sftp.*/Subsystem sftp internal-sftp/' /etc/ssh/sshd_config && \
-    echo "Port 80" >> /etc/ssh/sshd_config && \
+    echo "Port 2222" >> /etc/ssh/sshd_config && \
     echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config && \
     echo "PermitRootLogin no" >> /etc/ssh/sshd_config && \
     echo "Match Group sftpgroup" >> /etc/ssh/sshd_config && \
@@ -39,8 +39,8 @@ RUN echo '#!/bin/bash' > /start.sh && \
     echo 'exec /usr/sbin/sshd -D' >> /start.sh && \
     chmod +x /start.sh
 
-# Expose port 80
-EXPOSE 80
+# Expose port 2222
+EXPOSE 2222
 
 # Start SSH server
 CMD ["/start.sh"]
