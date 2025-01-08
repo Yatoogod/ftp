@@ -19,10 +19,10 @@ RUN groupadd sftpgroup && \
     chown sftpuser:sftpgroup /home/sftpuser/upload
 
 # Configure SSH for SFTP only
-RUN echo "Port 80" >> /etc/ssh/sshd_config && \
+RUN sed -i 's/Subsystem.*sftp.*/Subsystem sftp internal-sftp/' /etc/ssh/sshd_config && \
+    echo "Port 80" >> /etc/ssh/sshd_config && \
     echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config && \
     echo "PermitRootLogin no" >> /etc/ssh/sshd_config && \
-    echo "Subsystem sftp internal-sftp" >> /etc/ssh/sshd_config && \
     echo "Match Group sftpgroup" >> /etc/ssh/sshd_config && \
     echo "    ChrootDirectory /home/sftpuser" >> /etc/ssh/sshd_config && \
     echo "    ForceCommand internal-sftp" >> /etc/ssh/sshd_config && \
@@ -31,6 +31,10 @@ RUN echo "Port 80" >> /etc/ssh/sshd_config && \
 
 # Create startup script
 RUN echo '#!/bin/bash' > /start.sh && \
+    echo 'if [ -z "${SFTP_PASSWORD}" ]; then' >> /start.sh && \
+    echo '    echo "Error: SFTP_PASSWORD environment variable is not set"' >> /start.sh && \
+    echo '    exit 1' >> /start.sh && \
+    echo 'fi' >> /start.sh && \
     echo 'echo "sftpuser:${SFTP_PASSWORD}" | chpasswd' >> /start.sh && \
     echo 'exec /usr/sbin/sshd -D' >> /start.sh && \
     chmod +x /start.sh
